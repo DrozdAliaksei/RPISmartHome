@@ -19,7 +19,7 @@ import android.widget.Toast;
 public class AuthorizationActivity extends AppCompatActivity implements View.OnClickListener  {
 
     //private static final String TAG = AuthorizationActivity.class.getSimpleName();
-    private static final String TAG = "Fuck";
+    private static final String TAG = "Authorization";
     private static final String EMPTY_STRING = "";
 
     final String SAVED_IP = "saved_ip";
