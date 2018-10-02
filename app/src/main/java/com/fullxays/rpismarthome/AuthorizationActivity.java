@@ -8,6 +8,8 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +33,8 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
     private ImageButton connectingSettings;
     private TextInputLayout login;
     private TextInputLayout password;
+    private TextInputEditText editLogin;
+    private TextInputEditText editPassword;
 
     private EditText ipAddress;
     private EditText portNum;
@@ -50,6 +54,8 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
         connectingSettings = findViewById(R.id.connectionSettings);
         login = findViewById(R.id.login);
         password = findViewById(R.id.password);
+        editLogin = findViewById(R.id.editLogin);
+        editPassword = findViewById(R.id.editPassword);
 
         autorization.setOnClickListener(this);
         connectingSettings.setOnClickListener(this);
@@ -68,7 +74,7 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                         context);
 
-                // set prompts.xml to alertdialog builder
+                // set prompts.xml to alert dialog builder
                 alertDialogBuilder.setView(settingsView);
 
                 ipAddress = settingsView.findViewById(R.id.ip_address);
@@ -111,17 +117,23 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
                 Toast toast = Toast.makeText(this,log+"   "+pass,Toast.LENGTH_SHORT);
                 //toast.show();
                 //ToDo : dosn't show error message, just indication by color + add methods send receive data to check
-                if(log.length()==0){
-                    login.setErrorEnabled(true);
-                    //login.setError(getString(R.string.login_error));
-                    login.setError("OMG");
-                    password.setError(getString(R.string.password_error));
-                }
-                else {
-                    login.setError(EMPTY_STRING);
-                    password.setError(EMPTY_STRING);
-                }
+                // form
+                showError();
                 break;
+        }
+    }
+
+    void showError(){
+        if(login.getEditText().getText().length()==0){
+            Log.i(TAG,"showing error msg");
+            login.setError(getString(R.string.login_error));
+            editLogin.setError(getString(R.string.login_error));
+            password.setError(getString(R.string.password_error));
+            editPassword.setError(getString(R.string.password_error));
+        }
+        else {
+            login.setErrorEnabled(false);
+            password.setErrorEnabled(false);
         }
     }
 
