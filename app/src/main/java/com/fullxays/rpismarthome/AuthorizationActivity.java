@@ -2,6 +2,7 @@ package com.fullxays.rpismarthome;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -22,7 +23,6 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
 
     //private static final String TAG = AuthorizationActivity.class.getSimpleName();
     private static final String TAG = "Authorization";
-    private static final String EMPTY_STRING = "";
 
     final String SAVED_IP = "saved_ip";
     final String SAVED_PORT = "saved_port";
@@ -59,6 +59,11 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
 
         autorization.setOnClickListener(this);
         connectingSettings.setOnClickListener(this);
+
+        ipAddress = findViewById(R.id.ip_address);
+        portNum = findViewById(R.id.port_num);
+
+
 
     }
 
@@ -116,15 +121,29 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
                 pass = password.getEditText().getText().toString();
                 Toast toast = Toast.makeText(this,log+"   "+pass,Toast.LENGTH_SHORT);
                 //toast.show();
-                //ToDo : dosn't show error message, just indication by color + add methods send receive data to check
-                // form
-                showError();
+                //ToDo : dosn't show error message below(not so good as i wanted)
+                //ToDo: add methods send receive data to check
+
+                if(checkServerAddress()==false){
+                    Toast toast1 = Toast.makeText(this,"Please enter server ip-address " +
+                            "and port number in settings",Toast.LENGTH_LONG);
+                    toast1.show();
+                    break;
+                }
+                //showError();
+                Log.i(TAG, ipAddress.getText().toString() + "  " + portNum.getText().toString());
+                Intent intent = new Intent(this, ControlPanel.class);
+                intent.putExtra("ipAddress", ipAddress.getText().toString());
+                intent.putExtra("portNum", portNum.getText().toString());
+                startActivity(intent);
+
                 break;
         }
     }
 
     void showError(){
-        if(login.getEditText().getText().length()==0){
+        //if(!isAuthorized()){
+        if(login.getEditText().getText().length()==0) {
             Log.i(TAG,"showing error msg");
             login.setError(getString(R.string.login_error));
             editLogin.setError(getString(R.string.login_error));
@@ -153,6 +172,14 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
         String savedPort = sPref.getString(SAVED_PORT, "");
         ipAddress.setText(savedIp);
         portNum.setText(savedPort);
+        }
+
+    boolean checkServerAddress(){
+        Log.i(TAG,"Check that info about ip-address and port stored in memory");
+        sPref = getPreferences(MODE_PRIVATE);
+        if(sPref.getString(SAVED_IP,"").length()==0 || sPref.getString(SAVED_PORT,"").length() == 0)
+           return false;
+        else return true;
         }
 
 }

@@ -3,4 +3,14 @@
 
     <string name="login_error">Check your login</string>
     <string name="password_error">Check your password</string>
+    <string name="dim_light">Dim Light</string>
+    <string name="location">location</string>
+
+    <string-array name="gpio">
+        <item>gpio1</item>
+        <item>gpio2</item>
+        <item>gpio3</item>
+        <item>gpio4</item>
+        <item>gpio5</item>
+    </string-array>
 </resources>
