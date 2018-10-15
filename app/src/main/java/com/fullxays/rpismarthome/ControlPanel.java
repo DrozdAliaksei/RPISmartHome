@@ -10,6 +10,8 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.net.Socket;
+
 public class ControlPanel extends AppCompatActivity implements View.OnClickListener {
 
 

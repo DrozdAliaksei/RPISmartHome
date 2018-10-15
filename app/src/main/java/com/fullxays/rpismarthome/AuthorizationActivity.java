@@ -4,22 +4,29 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
-public class AuthorizationActivity extends AppCompatActivity implements View.OnClickListener  {
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class AuthorizationActivity extends AppCompatActivity {
 
     //private static final String TAG = AuthorizationActivity.class.getSimpleName();
     private static final String TAG = "Authorization";
@@ -28,6 +35,18 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
     final String SAVED_PORT = "saved_port";
     SharedPreferences sPref;
 
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
+    private Socket socket;
+    private Pattern pattern;
+    private Matcher matcher;
+    private Handler handler;
+
+    private static final String IPADDRESS_PATTERN =
+            "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 
     private Button autorization;
     private ImageButton connectingSettings;
@@ -41,6 +60,9 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
 
     final Context context = this;
 
+    String ip;
+    int port;
+
     String log;
     String pass;
 
@@ -48,6 +70,8 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        pattern = Pattern.compile(IPADDRESS_PATTERN);
+        handler = new Handler();
         setContentView(R.layout.authorization);
 
         autorization = findViewById(R.id.autorization);
@@ -57,20 +81,31 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
         editLogin = findViewById(R.id.editLogin);
         editPassword = findViewById(R.id.editPassword);
 
-        autorization.setOnClickListener(this);
-        connectingSettings.setOnClickListener(this);
+        autorization.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    if (!checkIP(ip))
+                        throw new UnknownHostException(ip + "is not a valid IP address");
+                    if (port > 65535 && port < 0)
+                        throw new UnknownHostException(port + "is not a valid port number ");
+                    Client client = new Client(ip, port);
+                    client.start();
+                    Intent intent = new Intent(this,ControlPanel.class);
+                    intent.putExtra("ipAddress", ip);
+                    intent.putExtra("port", port);
+                    startActivity(intent);
 
-        ipAddress = findViewById(R.id.ip_address);
-        portNum = findViewById(R.id.port_num);
-
-
-
-    }
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.connectionSettings:
+                } catch (UnknownHostException e) {
+                    showErrorsMessages("Please enter a valid IP !! ");
+                } catch (NumberFormatException e) {
+                    showErrorsMessages("Please enter valid port number !! ");
+                }
+            }
+        });
+        connectingSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 Log.i(TAG, "Connection Settings dialog opening");
                 // get connecting_settings.xml view
                 LayoutInflater li = LayoutInflater.from(context);
@@ -111,49 +146,14 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
 
                 // show it
                 alertDialog.show();
-                break;
+            }
+        });
 
-            case R.id.autorization:
-                Log.i(TAG,"Autorization block");
-                //send data to RPI, receive answer and enter
-                // or show notification that something is incorrect
-                log = login.getEditText().getText().toString();
-                pass = password.getEditText().getText().toString();
-                Toast toast = Toast.makeText(this,log+"   "+pass,Toast.LENGTH_SHORT);
-                //toast.show();
-                //ToDo : dosn't show error message below(not so good as i wanted)
-                //ToDo: add methods send receive data to check
+        ipAddress = findViewById(R.id.ip_address);
+        portNum = findViewById(R.id.port_num);
 
-                if(checkServerAddress()==false){
-                    Toast toast1 = Toast.makeText(this,"Please enter server ip-address " +
-                            "and port number in settings",Toast.LENGTH_LONG);
-                    toast1.show();
-                    break;
-                }
-                //showError();
-                Log.i(TAG, ipAddress.getText().toString() + "  " + portNum.getText().toString());
-                Intent intent = new Intent(this, ControlPanel.class);
-                intent.putExtra("ipAddress", ipAddress.getText().toString());
-                intent.putExtra("portNum", portNum.getText().toString());
-                startActivity(intent);
 
-                break;
-        }
-    }
 
-    void showError(){
-        //if(!isAuthorized()){
-        if(login.getEditText().getText().length()==0) {
-            Log.i(TAG,"showing error msg");
-            login.setError(getString(R.string.login_error));
-            editLogin.setError(getString(R.string.login_error));
-            password.setError(getString(R.string.password_error));
-            editPassword.setError(getString(R.string.password_error));
-        }
-        else {
-            login.setErrorEnabled(false);
-            password.setErrorEnabled(false);
-        }
     }
 
     void saveSettings() {
@@ -172,14 +172,85 @@ public class AuthorizationActivity extends AppCompatActivity implements View.OnC
         String savedPort = sPref.getString(SAVED_PORT, "");
         ipAddress.setText(savedIp);
         portNum.setText(savedPort);
+        ip = savedIp;
+        port = Integer.valueOf(savedPort);
+    }
+
+    private void closeConnection() {
+        try {
+            out.writeObject("close");
+            out.close();
+            in.close();
+            socket.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            showErrorsMessages(ex.getMessage());
+        }
+    }//end of closeConnection
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        closeConnection();
+    }
+
+
+    void showErrorsMessages(String error) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(AuthorizationActivity.this);
+        dialog.setTitle("Error!! ").setMessage(error).setNeutralButton("OK", null).create().show();
+    }
+
+    public boolean checkIP(final String ip) {
+        matcher = pattern.matcher(ip);
+        return matcher.matches();
+    }
+
+    /////////////// client thread ////////////////////////////
+    private class Client extends Thread {
+        private String ipaddress;
+        private int portnum;
+
+        public Client(String ipaddress, int portnum) {
+            this.ipaddress = ipaddress;
+            this.portnum = portnum;
         }
 
-    boolean checkServerAddress(){
-        Log.i(TAG,"Check that info about ip-address and port stored in memory");
-        sPref = getPreferences(MODE_PRIVATE);
-        if(sPref.getString(SAVED_IP,"").length()==0 || sPref.getString(SAVED_PORT,"").length() == 0)
-           return false;
-        else return true;
+        @Override
+        public void run() {
+            super.run();
+            connectToServer(ipaddress, portnum);
+
         }
 
+
+        public void connectToServer(String ip, int port) {
+
+            try {
+                socket = new Socket(InetAddress.getByName(ip), port);
+                out = new ObjectOutputStream(socket.getOutputStream());
+                out.flush();
+                in = new ObjectInputStream(socket.getInputStream());
+                for (int i = 0; i < 1; i++) {
+                    System.out.println((String) in.readObject() + "\n");
+                }
+
+                handler.post(new Runnable() {
+                    public void run() {
+
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+                handler.post(new Runnable() {
+                    public void run() {
+                        showErrorsMessages("Unkown host!!");
+                    }
+                });
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }//end of client class
 }

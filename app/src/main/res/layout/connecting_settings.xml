@@ -15,6 +15,8 @@
     <EditText
         android:id="@+id/ip_address"
         android:layout_width="match_parent"
+        android:inputType="number|numberDecimal"
+        android:digits="0123456789."
         android:layout_height="wrap_content"
         android:hint="192.168.0.1">
 
@@ -26,12 +28,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Enter Port number : "
-        android:inputType="number"
+        android:inputType="phone"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <EditText
         android:id="@+id/port_num"
         android:layout_width="match_parent"
+        android:inputType="number"
         android:layout_height="wrap_content"
         android:hint="80"></EditText>
 
