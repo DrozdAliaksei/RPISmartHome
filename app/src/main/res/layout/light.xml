@@ -18,7 +18,7 @@
         app:srcCompat="@drawable/ic_lightbulb_off" />
 
     <Switch
-        android:id="@+id/switch1"
+        android:id="@+id/lightStatus"
         android:layout_width="65dp"
         android:layout_height="17dp"
         android:layout_alignParentTop="true"
@@ -27,7 +27,7 @@
         android:layout_marginEnd="4dp" />
 
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/lightGPIO"
         android:layout_width="104dp"
         android:layout_height="36dp"
         android:layout_alignStart="@+id/name"

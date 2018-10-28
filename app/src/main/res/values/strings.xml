@@ -5,6 +5,9 @@
     <string name="password_error">Check your password</string>
     <string name="dim_light">Dim Light</string>
     <string name="location">location</string>
+    <string name="start_service">Start Client service</string>
+    <string name="stop_service">Stop Client service</string>
+    <string name="settings">srttings</string>
 
     <string-array name="gpio">
         <item>gpio1</item>

@@ -7,69 +7,77 @@
     android:background="@color/background"
     tools:context=".ControlPanel">
 
-    <Spinner
-        android:id="@+id/chooseRoom"
-        android:layout_height="40dp"
-        android:layout_width="match_parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginBottom="5dp"
-        android:autofillHints="Your Room"
-        app:layout_constraintBottom_toTopOf="@+id/chooseControllerCategory"
-        app:layout_constraintEnd_toStartOf="@+id/settings"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/settings"
-        android:layout_width="30dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="5dp"
-        android:background="@color/infoSpace"
-        app:layout_constraintBottom_toTopOf="@+id/chooseControllerCategory"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/chooseRoom"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_more" />
-
-    <Spinner
-        android:id="@+id/chooseControllerCategory"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="5dp"
-        android:autofillHints="Choose your controller"
-        app:layout_constraintBottom_toTopOf="@+id/ModuleContainer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings" />
-
-    <RelativeLayout
-        android:id="@+id/ModuleContainer"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chooseControllerCategory">
+        android:orientation="vertical">
 
-        <ListView
-            android:id="@+id/controllers"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:clickable="true">
+            android:orientation="horizontal"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp">
 
-        </ListView>
-    </RelativeLayout>
+            <ImageButton
+                android:id="@+id/settings"
+                android:layout_width="30dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="5dp"
+                android:background="@color/infoSpace"
+                android:contentDescription="@string/settings"
+                app:layout_constraintBottom_toTopOf="@+id/chooseControllerCategory"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/chooseRoom"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_more" />
+
+            <Spinner
+                android:id="@+id/chooseControllerCategory"
+                android:layout_width="339dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="37dp"
+                android:layout_marginBottom="5dp"
+                android:autofillHints="Choose your controller"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/chooseRoom" />
+
+            <Spinner
+                android:id="@+id/chooseRoom"
+                android:layout_width="344dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginBottom="5dp"
+                android:autofillHints="Your Room"
+                app:layout_constraintBottom_toTopOf="@+id/chooseControllerCategory"
+                app:layout_constraintEnd_toStartOf="@+id/settings"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerViewControllers"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/addModule"
