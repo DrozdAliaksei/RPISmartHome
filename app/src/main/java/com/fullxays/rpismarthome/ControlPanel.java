@@ -43,7 +43,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_control_panel);
 
         checkExtraData();
-        serverCommunicationService.getPinsStatus();
+       // serverCommunicationService.getPinsStatus();
 
         settings = findViewById(R.id.settings);
         settings.setOnClickListener(this);
@@ -52,7 +52,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         chooseRoom = findViewById(R.id.chooseRoom);
         chooseControllerCategoty = findViewById(R.id.chooseControllerCategory);
 
-        initRecycleView();
+        //initRecycleView();
     }
 
     private void initRecycleView(){

@@ -1,6 +1,7 @@
 package com.fullxays.rpismarthome;
 
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.os.Handler;
 import java.io.BufferedReader;
@@ -29,20 +30,31 @@ public class Connection  {
     private String ipAddress;
     private int portNum;
 
+    private static Connection instance;
 
 
-    public Connection(String ipAddress,int portNum){
+
+    private Connection(String ipAddress ,int portNum){
         this.ipAddress = ipAddress;
         this.portNum = portNum;
         Log.i(TAG,"Try to open Client Socket");
         openSocket();
+    }
 
+    public static synchronized Connection getInstance(String ipAddress, int portNum){
+        if(instance == null){
+            instance = new Connection(ipAddress,portNum);
+            return instance;
+        }
+        else
+        return instance;
     }
 
     public Socket openSocket(){
         try  {
             this.socket = new Socket(ipAddress, portNum);
         }catch (IOException ioe){
+            Log.i(TAG,"Fuck this connection");
             ioe.printStackTrace();
         }
         return socket;
@@ -57,7 +69,7 @@ public class Connection  {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }//end of closeConnection
+    }
 
 
     public void sendMassage(String str) throws IOException {

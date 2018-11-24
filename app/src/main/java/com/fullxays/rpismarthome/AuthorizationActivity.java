@@ -21,17 +21,16 @@ import java.util.regex.Pattern;
 
 public class AuthorizationActivity extends AppCompatActivity {
 
-    //private static final String TAG = AuthorizationActivity.class.getSimpleName();
     private static final String TAG = "Authorization";
 
     final String SAVED_IP = "saved_ip";
     final String SAVED_PORT = "saved_port";
     SharedPreferences sPref;
 
+    private Connection connection;
 
     private Pattern pattern;
     private Matcher matcher;
-
 
     private static final String IPADDRESS_PATTERN =
             "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
@@ -64,6 +63,8 @@ public class AuthorizationActivity extends AppCompatActivity {
         pattern = Pattern.compile(IPADDRESS_PATTERN);
         setContentView(R.layout.authorization);
 
+        getConnectingSettings();
+
         autorization = findViewById(R.id.autorization);
         connectingSettings = findViewById(R.id.connectionSettings);
         login = findViewById(R.id.login);
@@ -72,6 +73,7 @@ public class AuthorizationActivity extends AppCompatActivity {
         editPassword = findViewById(R.id.editPassword);
 
         autorization.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
                 try {
@@ -79,18 +81,23 @@ public class AuthorizationActivity extends AppCompatActivity {
                         throw new UnknownHostException(ip + "is not a valid IP address");
                     if (port > 65535 && port < 0)
                         throw new UnknownHostException(port + "is not a valid port number ");
-                    // Client client = new Client(ip, port);
-                    // client.start();
-                    Intent intent = new Intent(AuthorizationActivity.this,ClientSocket.class);
-                    intent.putExtra("ip", ip);
-                    intent.putExtra("port",port);
-                    startService(intent);
-
+                    connection = Connection.getInstance(ip,port);
+                    Log.i(TAG,"Connection failed. Try later.");
                 } catch (UnknownHostException e) {
                     showErrorsMessages("Please enter a valid IP !! ");
                 } catch (NumberFormatException e) {
                     showErrorsMessages("Please enter valid port number !! ");
+                } catch (UnknownError er){
+                    Log.i(TAG,"Connection failed. Try later.");
+                    showErrorsMessages("Connection failed. Try later.");
                 }
+                // Intent intent = new Intent(AuthorizationActivity.this,ClientSocket.class);
+                //intent.putExtra("ip", ip);
+                //intent.putExtra("port",port);
+                //startService(intent);
+
+                Intent intent = new Intent(AuthorizationActivity.this,ControlPanel.class);
+                startActivity(intent);
             }
         });
         connectingSettings.setOnClickListener(new View.OnClickListener() {
@@ -162,8 +169,14 @@ public class AuthorizationActivity extends AppCompatActivity {
         String savedPort = sPref.getString(SAVED_PORT, "");
         ipAddress.setText(savedIp);
         portNum.setText(savedPort);
-        ip = savedIp;
-        port = Integer.valueOf(savedPort);
+        //ip = savedIp;
+        //port = Integer.valueOf(savedPort);
+    }
+
+    void getConnectingSettings(){
+        sPref = getPreferences(MODE_PRIVATE);
+        ip = sPref.getString(SAVED_IP, "");
+        port = Integer.valueOf(sPref.getString(SAVED_PORT, ""));
     }
 
     void showErrorsMessages(String error) {
