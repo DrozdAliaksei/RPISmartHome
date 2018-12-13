@@ -1,73 +1,49 @@
 package com.fullxays.rpismarthome;
 
-import android.os.AsyncTask;
-import android.support.annotation.Nullable;
 import android.util.Log;
-import android.os.Handler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
-
 
 public class Connection  {
 
     private static final String TAG = "Connection";
 
-    private static InputStreamReader inputStreamReader;
-    private static BufferedReader bufferedReader;
-    private static PrintWriter printWriter;
-
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private Socket socket;
-    private String ipAddress;
-    private int portNum;
 
-    private static Connection instance;
-
-
-
-    private Connection(String ipAddress ,int portNum){
-        this.ipAddress = ipAddress;
-        this.portNum = portNum;
+    public Connection(String ip ,int port) throws IOException {
         Log.i(TAG,"Try to open Client Socket");
-        openSocket();
-    }
 
-    public static synchronized Connection getInstance(String ipAddress, int portNum){
-        if(instance == null){
-            instance = new Connection(ipAddress,portNum);
-            return instance;
-        }
-        else
-        return instance;
-    }
+        this.socket = new Socket(ip,port);
+        this.out = new ObjectOutputStream(socket.getOutputStream());
+        this.out.flush();
+        this.in = new ObjectInputStream(socket.getInputStream());
 
-    public Socket openSocket(){
-        try  {
-            this.socket = new Socket(ipAddress, portNum);
-        }catch (IOException ioe){
-            Log.i(TAG,"Fuck this connection");
-            ioe.printStackTrace();
+        try {
+            if(in.readObject().equals("Hello, Welcome to RPI")){
+                Log.i(TAG,"Hello, Welcome to RPI");
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
-        return socket;
     }
 
     public void closeConnection() {
         try {
-            out.writeObject("close");
-            out.close();
-            in.close();
-            socket.close();
+            Log.i(TAG,"closeConnection");
+            this.out.writeObject("close");
+            this.out.close();
+            this.in.close();
+            this.socket.close();
         } catch (IOException ex) {
             ex.printStackTrace();
+            Log.i(TAG,"closeConnection IOException");
         }
     }
 

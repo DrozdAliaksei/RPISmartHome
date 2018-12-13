@@ -30,8 +30,7 @@ public class ClientSocket extends Service {
         port = intent.getIntExtra("port",port);
         Log.i(TAG,"onCreate service dsta: " + ip +"   "+ port);
 
-        //connection = new Connection(ip,port);
-
+        //connection = new ConnectionService(ip,port);
     }
 
     @Override

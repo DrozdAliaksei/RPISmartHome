@@ -95,7 +95,8 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     private class FetchItemTask extends AsyncTask<Void,Void,List<Controller>> {
         @Override
         protected List<Controller> doInBackground(Void... params) {
-            return new ServerCommunicationService().getPinsStatus();
+            //return new ServerCommunicationService().getPinsStatus();
+            return null; //TODO заглушка
         }
 
         @Override

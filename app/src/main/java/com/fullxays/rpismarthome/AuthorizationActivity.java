@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
@@ -15,6 +17,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
+
+import com.fullxays.rpismarthome.Services.ServerCommunicationService;
+
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,8 +33,7 @@ public class AuthorizationActivity extends AppCompatActivity {
     final String SAVED_IP = "saved_ip";
     final String SAVED_PORT = "saved_port";
     SharedPreferences sPref;
-
-    private Connection connection;
+    private static Handler handler;
 
     private Pattern pattern;
     private Matcher matcher;
@@ -71,6 +77,8 @@ public class AuthorizationActivity extends AppCompatActivity {
         password = findViewById(R.id.password);
         editLogin = findViewById(R.id.editLogin);
         editPassword = findViewById(R.id.editPassword);
+        ipAddress = findViewById(R.id.ip_address);
+        portNum = findViewById(R.id.port_num);
 
         autorization.setOnClickListener(new View.OnClickListener() {
 
@@ -81,29 +89,29 @@ public class AuthorizationActivity extends AppCompatActivity {
                         throw new UnknownHostException(ip + "is not a valid IP address");
                     if (port > 65535 && port < 0)
                         throw new UnknownHostException(port + "is not a valid port number ");
-                    connection = Connection.getInstance(ip,port);
-                    Log.i(TAG,"Connection failed. Try later.");
+                    Log.i(TAG, ip + "_" + port);
                 } catch (UnknownHostException e) {
                     showErrorsMessages("Please enter a valid IP !! ");
                 } catch (NumberFormatException e) {
                     showErrorsMessages("Please enter valid port number !! ");
-                } catch (UnknownError er){
-                    Log.i(TAG,"Connection failed. Try later.");
-                    showErrorsMessages("Connection failed. Try later.");
                 }
                 // Intent intent = new Intent(AuthorizationActivity.this,ClientSocket.class);
                 //intent.putExtra("ip", ip);
                 //intent.putExtra("port",port);
                 //startService(intent);
 
-                Intent intent = new Intent(AuthorizationActivity.this,ControlPanel.class);
-                startActivity(intent);
+                ServerCommunicationService.checkConnection(ip, port, new ServerCommunicationService.CallBack<Boolean>() {
+                    @Override
+                    public void callingBack(Boolean data) {
+                        connectionStatus(data);
+                    }
+                });
             }
         });
         connectingSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.i(TAG, "Connection Settings dialog opening");
+                Log.i(TAG, "ConnectionService Settings dialog opening");
                 // get connecting_settings.xml view
                 LayoutInflater li = LayoutInflater.from(context);
                 View settingsView = li.inflate(R.layout.connecting_settings, null);
@@ -133,7 +141,7 @@ public class AuthorizationActivity extends AppCompatActivity {
                         .setNegativeButton("Cancel",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        Log.i(TAG,"Setting dialog closed");
+                                        Log.i(TAG, "Setting dialog closed");
                                         dialog.cancel();
                                     }
                                 });
@@ -145,16 +153,32 @@ public class AuthorizationActivity extends AppCompatActivity {
                 alertDialog.show();
             }
         });
+    }
 
-        ipAddress = findViewById(R.id.ip_address);
-        portNum = findViewById(R.id.port_num);
+    private void connectionStatus(Boolean data) {
+        Log.i(TAG, "ConnectionStatus inside function" + data);
+        if (data) {
+            Log.i(TAG, "Connection done");
+            Intent intent = new Intent(AuthorizationActivity.this, ControlPanel.class);
+            startActivity(intent);
 
-
-
+        } else {
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    Looper.prepare();
+                    super.run();
+                    Log.i(TAG,"Connection failed");
+                    Toast.makeText(getApplicationContext(), "Connection failed\nCheck connection data", Toast.LENGTH_LONG).show();
+                    Looper.loop();
+                }
+            };
+            thread.run();
+        }
     }
 
     void saveSettings() {
-        Log.i(TAG,"Saving data");
+        Log.i(TAG, "Saving data");
         sPref = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor ed = sPref.edit();
         ed.putString(SAVED_IP, ipAddress.getText().toString());
@@ -163,17 +187,15 @@ public class AuthorizationActivity extends AppCompatActivity {
     }
 
     void loadSettings() {
-        Log.i(TAG,"Loading saved before data");
+        Log.i(TAG, "Loading saved before data");
         sPref = getPreferences(MODE_PRIVATE);
         String savedIp = sPref.getString(SAVED_IP, "");
         String savedPort = sPref.getString(SAVED_PORT, "");
         ipAddress.setText(savedIp);
         portNum.setText(savedPort);
-        //ip = savedIp;
-        //port = Integer.valueOf(savedPort);
     }
 
-    void getConnectingSettings(){
+    void getConnectingSettings() {
         sPref = getPreferences(MODE_PRIVATE);
         ip = sPref.getString(SAVED_IP, "");
         port = Integer.valueOf(sPref.getString(SAVED_PORT, ""));
