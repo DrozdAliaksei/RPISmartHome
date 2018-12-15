@@ -9,6 +9,8 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import javax.security.auth.login.LoginException;
+
 public class Connection  {
 
     private static final String TAG = "Connection";
@@ -49,15 +51,24 @@ public class Connection  {
 
 
     public void sendMassage(String str) throws IOException {
-        PrintWriter toServer = new PrintWriter(socket.getOutputStream(),true);
-            toServer.println(str);
+        Log.i(TAG, "sendMassage: " + str);
+//        PrintWriter toServer = new PrintWriter(socket.getOutputStream(),true);
+//            toServer.println(str);
+        out.writeObject(str);
+        out.flush();
     }
 
     public String receiveMassage()throws IOException{
-        BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String result = fromServer.readLine();
-        Log.i(TAG, result);
-        return result;
+        Log.i(TAG, "receiveMassage: ");
+//        BufferedReader fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//        String result = fromServer.readLine();
+        try {
+            return (String) in.readObject();
+        } catch (ClassNotFoundException e) {
+            Log.i(TAG, "receiveMassage: catch exception ClassNotFound");
+            e.printStackTrace();
+        }
+        Log.i(TAG, "receiveMassage: return null");
+        return null;
     }
-
 }

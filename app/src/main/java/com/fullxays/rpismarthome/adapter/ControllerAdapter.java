@@ -15,7 +15,8 @@ import com.fullxays.rpismarthome.controllers.Controller;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ControllerAdapter extends RecyclerView.Adapter<ControllerAdapter.ControllerViewHolder> {
+public class ControllerAdapter
+        extends RecyclerView.Adapter<ControllerAdapter.ControllerViewHolder> {
 
     private List<Controller> controllerList = new ArrayList<>();
 
@@ -35,6 +36,15 @@ public class ControllerAdapter extends RecyclerView.Adapter<ControllerAdapter.Co
             status.setChecked(controller.isStatus());
             name.setText(controller.getName());
             GPIO.setSelection(controller.getGPIO());
+            /*if() {
+                GPIO.setVisibility(View.GONE);
+            }
+            GPIO.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                }
+            });*/
         }
     }
 

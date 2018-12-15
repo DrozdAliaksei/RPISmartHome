@@ -7,6 +7,14 @@ public class Controller {
     private int GPIO;
     private boolean status;
 
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
     public String getName() {
         return name;
     }
@@ -31,11 +39,11 @@ public class Controller {
         this.status = status;
     }
 
-        public int getID() {
-            return ID;
-        }
-
-        public void setID(int ID) {
-            this.ID = ID;
-        }
+    @Override
+    public String toString() {
+        return   ID +
+                ";" + name +
+                ";" + GPIO +
+                ";" + status;
+    }
 }

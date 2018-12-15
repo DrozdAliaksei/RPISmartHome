@@ -26,7 +26,7 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     private static final String TAG = "ControlPanel";
 
     private Intent data;
-    private ServerCommunicationService serverCommunicationService;
+    //private ServerCommunicationService serverCommunicationService;
     private ImageButton settings;
     private ImageButton addModule;
     private Spinner chooseRoom;
@@ -35,12 +35,17 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     private RecyclerView recyclerViewControllers;
     private ControllerAdapter controllerAdapter;
 
+    private String ReceivedIP ;
+    private int ReceivedPORT ;
+
     private List<Controller> controllersList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control_panel);
+
+        Log.i(TAG,"Enter Control panel");
 
         checkExtraData();
        // serverCommunicationService.getPinsStatus();
@@ -52,13 +57,13 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
         chooseRoom = findViewById(R.id.chooseRoom);
         chooseControllerCategoty = findViewById(R.id.chooseControllerCategory);
 
-        //initRecycleView();
+        initRecycleView();
     }
 
     private void initRecycleView(){
         recyclerViewControllers = findViewById(R.id.recyclerViewControllers);
         recyclerViewControllers.setLayoutManager(new LinearLayoutManager(this));
-
+        Log.i(TAG,"initRecycleView");
          controllerAdapter = new ControllerAdapter();
 
         new FetchItemTask().execute();
@@ -66,14 +71,11 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     }
 
     void checkExtraData(){
-        String SAVED_IP ;
-        String SAVED_PORT ;
-
         data = getIntent();
-        SAVED_IP = data.getStringExtra("ipAddress");
-        SAVED_PORT = data.getStringExtra("portNum");
+        ReceivedIP = data.getStringExtra("ip");
+        ReceivedPORT = data.getIntExtra("port",0);
 
-        Log.i(TAG,SAVED_IP + " " + SAVED_PORT);
+        Log.i(TAG,ReceivedIP + " " + ReceivedPORT);
     }
 
     @Override
@@ -95,7 +97,17 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
     private class FetchItemTask extends AsyncTask<Void,Void,List<Controller>> {
         @Override
         protected List<Controller> doInBackground(Void... params) {
-            //return new ServerCommunicationService().getPinsStatus();
+            Log.i(TAG, "doInBackground: start comm");
+            ServerCommunicationService.getPinsStatus(ReceivedIP,ReceivedPORT, new ServerCommunicationService.CallBack<List<Controller>>(){
+                @Override
+                public void callingBack(List<Controller> data) {
+                    for (Controller item:
+                         data) {
+                        Log.i(TAG,item.toString());
+                    }
+                }
+            });
+            Log.i(TAG, "doInBackground: stop communication");
             return null; //TODO заглушка
         }
 
@@ -105,5 +117,4 @@ public class ControlPanel extends AppCompatActivity implements View.OnClickListe
             setupAdapter();
         }
     }
-
 }

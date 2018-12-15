@@ -47,25 +47,28 @@ public class ServerCommunicationService {
         thread.start();
     }
 
-    public void getPinsStatus(final String ip, final int port, final CallBack<List<Controller>> callback) {
+    public static void getPinsStatus(final String ip, final int port, final CallBack<List<Controller>> callback) {
+        Log.i(TAG,"GetPinsService");
         Thread thread = new Thread() {
             public void run() {
+                Log.i(TAG, "run: start");
                 List<Controller> controllers = new ArrayList<>();
                 Connection connection = null;// call socket
                 try {
                     connection = new Connection(ip, port);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
                     connection.sendMassage("getPinsStatus");
                     String controllersCount = connection.receiveMassage();
+                    Log.i(TAG, controllersCount);
                     for (int i = 0; i < Short.valueOf(controllersCount); i++) {
                         String controllerInfo = connection.receiveMassage();
                         parseItems(controllers, controllerInfo);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    if (connection != null) {
+                        connection.closeConnection();
+                    }
                 }
                 callback.callingBack(controllers);
 
@@ -74,7 +77,8 @@ public class ServerCommunicationService {
         thread.start();
     }
 
-    private  void parseItems(List<Controller> controllers, String contrillerInfo){
+    private static void parseItems(List<Controller> controllers, String contrillerInfo){
+        Log.i(TAG, "parseItems: ");
         String separator = ";";
         String[] info = contrillerInfo.split(separator);
         Controller controller = new Controller();

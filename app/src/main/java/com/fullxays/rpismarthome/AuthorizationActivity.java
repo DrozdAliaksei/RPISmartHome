@@ -95,10 +95,6 @@ public class AuthorizationActivity extends AppCompatActivity {
                 } catch (NumberFormatException e) {
                     showErrorsMessages("Please enter valid port number !! ");
                 }
-                // Intent intent = new Intent(AuthorizationActivity.this,ClientSocket.class);
-                //intent.putExtra("ip", ip);
-                //intent.putExtra("port",port);
-                //startService(intent);
 
                 ServerCommunicationService.checkConnection(ip, port, new ServerCommunicationService.CallBack<Boolean>() {
                     @Override
@@ -160,6 +156,8 @@ public class AuthorizationActivity extends AppCompatActivity {
         if (data) {
             Log.i(TAG, "Connection done");
             Intent intent = new Intent(AuthorizationActivity.this, ControlPanel.class);
+            intent.putExtra("ip",ip);
+            intent.putExtra("port",port);
             startActivity(intent);
 
         } else {
@@ -183,6 +181,7 @@ public class AuthorizationActivity extends AppCompatActivity {
         SharedPreferences.Editor ed = sPref.edit();
         ed.putString(SAVED_IP, ipAddress.getText().toString());
         ed.putString(SAVED_PORT, portNum.getText().toString());
+        Log.i(TAG,"Data:" + ipAddress.getText().toString()+"_"+portNum.getText().toString());
         ed.commit();
     }
 
